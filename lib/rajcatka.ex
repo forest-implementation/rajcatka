@@ -3,7 +3,7 @@ defmodule Rajcatka do
   Documentation for `Rajcatka`.
   """
 
-  def rajcatka(_\\:rand.seed(:exsplus, :os.timestamp()), n\\2), do: 1..n |> Enum.map(fn _ -> :rand.uniform end)#{:rand.uniform, :rand.uniform}
+  def rajcatka(n\\2, _\\:rand.seed(:exsplus, :os.timestamp())), do: 1..n |> Enum.map(fn _ -> :rand.uniform end)#{:rand.uniform, :rand.uniform}
 
   def plotek({min, max}), do: (max-min)/2 + min
 
@@ -18,25 +18,21 @@ defmodule Rajcatka do
   #def evaluate(rajcatka, 0) when len(rajcatka) == 1, do:
   def halfrange({min, max}), do: [{min, plotek({min,max})}, {plotek({min,max}), max}]
 
-  def pulit(init_range, rajcatka, acc, functionacc) do
+
+  def pulit(init_range, rajcatka, acc\\%{}, functionacc\\[], depth\\0) do
     [left, right] = halfrange(init_range)
     leftrajcatka = rajcatka |> Enum.filter(fn rajce -> in_range?(rajce, left) == 1 end)
     rightrajcatka = rajcatka |> Enum.filter(fn rajce -> in_range?(rajce, right) == 1 end)
 
     case {leftrajcatka |> Enum.count > 1, rightrajcatka |> Enum.count > 1, functionacc} do
-      {true, true, f} -> pulit(left, leftrajcatka, Map.merge(acc,%{left => leftrajcatka}), [fn end_acc, end_facc -> pulit(right, rightrajcatka, end_acc, end_facc) end] ++ f)
-      {false, true, f} -> pulit(right, rightrajcatka, Map.merge(acc,%{right => rightrajcatka}), f)
-      {true, false, f} -> pulit(left, leftrajcatka, Map.merge(acc,%{left => leftrajcatka}), f)
-      {false, false, [h|t]} -> h.(acc, t)
-      {false, false, []} -> acc
+      {true, true, f} -> pulit(left, leftrajcatka, acc, [fn end_acc, end_facc -> pulit(right, rightrajcatka, end_acc, end_facc, depth+1) end] ++ f, depth+1)
+      {false, true, f} -> pulit(right, rightrajcatka, Map.merge(acc,%{left => leftrajcatka, }), f, depth+1)
+      {true, false, f} -> pulit(left, leftrajcatka, Map.merge(acc,%{right => rightrajcatka, }), f, depth+1)
+      {false, false, [h|t]} -> h.(Map.merge(acc,%{right => rightrajcatka, left => leftrajcatka, }), t)
+      {false, false, []} -> Map.merge(acc,%{right => rightrajcatka, left => leftrajcatka ,})
 
     end
-    # # IO.inspect({rightrajcatka, rightrajcatka |> Enum.count, {left,right}})
-    # lefthash = if leftrajcatka |> Enum.count() > 1, do: pulit(left, leftrajcatka, Map.merge(acc,%{left => leftrajcatka}))
-    # # righthash = if rightrajcatka |> Enum.count() > 1, do: pulit(right, rightrajcatka), else: %{right => rightrajcatka}
-    # Map.merge(lefthash, righthash)
   end
-
 end
 
 defmodule TreeNode do
